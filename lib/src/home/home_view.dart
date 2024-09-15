@@ -29,7 +29,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Home'),
+        title: const Text('Entidades y servicios'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -45,12 +45,12 @@ class _HomeViewState extends ConsumerState<HomeView> {
               children:
                   homeState.items.map((item) => TreeNode(item: item)).toList(),
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Agregar lógica para añadir un nuevo elemento
-        },
-        child: const Icon(Icons.add),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {
+      //     // Agregar lógica para añadir un nuevo elemento
+      //   },
+      //   child: const Icon(Icons.add),
+      // ),
     );
   }
 }
@@ -67,10 +67,32 @@ class TreeNode extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(left: level * 16.0),
       child: ExpansionTile(
-        title: Text('${item.entity} : ${item.name}'),
-        children: item.children
-            .map((child) => TreeNode(item: child, level: level + 1))
-            .toList(),
+        title: Text(
+          '${item.entity} : ${item.name}',
+          style: TextStyle(color: Colors.blue), // Color for physical entities
+        ),
+        children: [
+          ...item.children
+              .map((child) => TreeNode(item: child, level: level + 1))
+              .toList(),
+          ...item.services
+              .map((service) => Padding(
+                    padding: EdgeInsets.only(left: (level + 1) * 16.0),
+                    child: ListTile(
+                      title: Text(
+                        service.type != null
+                            ? '${service.type} : ${service.service}'
+                            : service.service,
+                        style: TextStyle(
+                            color: Colors.green), // Color for services
+                      ),
+                      subtitle: service.address != null && service.port != null
+                          ? Text('Address: ${service.address}:${service.port}')
+                          : null,
+                    ),
+                  ))
+              .toList(),
+        ],
       ),
     );
   }
