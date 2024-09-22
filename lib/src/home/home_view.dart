@@ -14,12 +14,20 @@ class HomeView extends ConsumerStatefulWidget {
 }
 
 class _HomeViewState extends ConsumerState<HomeView> {
+  bool _expandAll = false;
+
   @override
   void initState() {
     super.initState();
     // Realizar la consulta al iniciar la vista
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(homeProvider.notifier).loadHierarchy();
+    });
+  }
+
+  void _toggleExpandAll() {
+    setState(() {
+      _expandAll = !_expandAll;
     });
   }
 
@@ -42,42 +50,67 @@ class _HomeViewState extends ConsumerState<HomeView> {
       body: homeState.isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              children:
-                  homeState.items.map((item) => TreeNode(item: item)).toList(),
+              children: homeState.items
+                  .map((item) => TreeNode(item: item, expandAll: _expandAll))
+                  .toList(),
             ),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () {
-      //     // Agregar lógica para añadir un nuevo elemento
-      //   },
-      //   child: const Icon(Icons.add),
-      // ),
     );
   }
 }
 
-class TreeNode extends StatelessWidget {
+class TreeNode extends StatefulWidget {
   final HomeItem item;
   final int level;
+  final bool expandAll;
 
-  const TreeNode({Key? key, required this.item, this.level = 0})
+  const TreeNode(
+      {Key? key, required this.item, this.level = 0, this.expandAll = false})
       : super(key: key);
+
+  @override
+  _TreeNodeState createState() => _TreeNodeState();
+}
+
+class _TreeNodeState extends State<TreeNode> {
+  late bool _isExpanded;
+
+  @override
+  void initState() {
+    super.initState();
+    _isExpanded = widget.expandAll;
+  }
+
+  @override
+  void didUpdateWidget(TreeNode oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.expandAll != oldWidget.expandAll) {
+      setState(() {
+        _isExpanded = widget.expandAll;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(left: level * 16.0),
+      padding: EdgeInsets.only(left: widget.level * 16.0),
       child: ExpansionTile(
+        key: PageStorageKey(widget.item.id),
+        initiallyExpanded: _isExpanded,
         title: Text(
-          '${item.entity} : ${item.name}',
+          '${widget.item.entity} : ${widget.item.name}',
           style: TextStyle(color: Colors.blue), // Color for physical entities
         ),
         children: [
-          ...item.children
-              .map((child) => TreeNode(item: child, level: level + 1))
+          ...widget.item.children
+              .map((child) => TreeNode(
+                  item: child,
+                  level: widget.level + 1,
+                  expandAll: widget.expandAll))
               .toList(),
-          ...item.services
+          ...widget.item.services
               .map((service) => Padding(
-                    padding: EdgeInsets.only(left: (level + 1) * 16.0),
+                    padding: EdgeInsets.only(left: (widget.level + 1) * 16.0),
                     child: ListTile(
                       title: Text(
                         service.type != null
