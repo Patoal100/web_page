@@ -99,7 +99,8 @@ class _TreeNodeState extends State<TreeNode> {
         initiallyExpanded: _isExpanded,
         title: Text(
           '${widget.item.entity} : ${widget.item.name}',
-          style: TextStyle(color: Colors.blue), // Color for physical entities
+          style: const TextStyle(
+              color: Colors.blue), // Color for physical entities
         ),
         children: [
           ...widget.item.children
@@ -114,9 +115,11 @@ class _TreeNodeState extends State<TreeNode> {
                     child: ListTile(
                       title: Text(
                         service.type != null
-                            ? '${service.type} : ${service.service}'
-                            : service.service,
-                        style: TextStyle(
+                            ? '${service.type} : ${service.service.map((apiService) => apiService.apiService).join(", ")}'
+                            : service.service
+                                .map((apiService) => apiService.apiService)
+                                .join(", "),
+                        style: const TextStyle(
                             color: Colors.green), // Color for services
                       ),
                       subtitle: service.address != null && service.port != null

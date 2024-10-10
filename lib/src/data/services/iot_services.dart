@@ -9,10 +9,9 @@ class IotService {
     const url = '$_baseUrl/hierarchy';
     try {
       final response = await _dio.get(url);
-      return HomeItem.fromJson(response.data);
+      return HomeItem.fromJson(response.data as Map<String, dynamic>);
     } on DioError catch (e) {
-      print('Error: $e');
-      rethrow;
+      throw Exception('Failed to load hierarchy: ${e.message}');
     }
   }
 }
